@@ -1,0 +1,159 @@
+package Mojo::Shipment;
+
+use Mojo::Base -base;
+use Scalar::Util 'blessed';
+
+has 'carriers' => sub { [] };
+
+use Carp;
+
+sub AUTOLOAD {
+  my $self = shift;
+  my ($package, $method) = our $AUTOLOAD =~ /^(.+)::(.+)$/;
+  return $self->delegate($method, @_);
+}
+
+sub add_carrier {
+  my ($self, $carrier, $conf) = @_;
+
+  if (blessed $carrier and $carrier->isa('Mojo::Shipment::Carrier')) {
+    push @{$self->carriers}, $carrier;
+    return $self;
+  }
+
+  for my $class ("Mojo::Shipment::Carrier::$carrier", $carrier) {
+    next unless eval "require $class; 1";
+    next unless $class->isa('Mojo::Shipment::Carrier');
+    next unless my $inst = $class->new($conf || {});
+    push @{$self->carriers}, $inst;
+    return $self;
+  }
+
+  croak "Unable to add carrier $carrier";
+}
+
+sub delegate {
+  my ($self, $method) = (shift, shift);
+  my $id = $_[0];
+
+  croak "No added carrier can handle $id"
+    unless my $carrier = $self->detect($id);
+
+  return $carrier->$method(@_);
+}
+
+sub detect {
+  my ($self, $id) = @_;
+  my $carriers = $self->carriers;
+  for my $carrier (@$carriers) {
+    return $carrier if $carrier->validate($id);
+  }
+
+  return undef;
+}
+
+1;
+
+=head1 NAME
+
+Mojo::Shipment - Get common shipping information from supported carriers
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+L<Mojo::Shipment> is a central module for obtaining shipping information from supported carriers.
+It is very lightweight, built on the L<Mojolicious> toolkit.
+The fact that it is built on L<Mojolicious> does not restrict its utility in non-Mojolicious apps.
+
+L<Mojo::Shipment::Carrier> subclasses request information from that carrier's api and extract information from it.
+The information is then returned in a standardized format for ease of use.
+Futher, L<Mojo::Shipment> itself tries to deduce which carrier to use based on the id number.
+This makes it very easy to use, but also implies that it will only ever report common information.
+More detailed API interfaces already exist and are mentioned L<below|/"SEE ALSO">.
+
+Note that this is a very early release and will likely have bugs that need to be worked out.
+It should be used for informative puposes only.
+Please do not rely on this for mission critical code until this message is removed.
+
+=head1 ATTTRIBUTES
+
+L<Mojo::Shipment> inherits all of the attributes from L<Mojo::Base> and implements the following new ones.
+
+=head2 carriers
+
+An array refence of added L<Mojo::Shipment::Carrier> objects.
+You probably want to use L</add_carrier> instead.
+
+=head1 METHODS
+
+L<Mojo::Shipment> inherits all of the methods from L<Mojo::Base> and implements the following new ones.
+
+=head2 add_carrier
+
+  $ship = $ship->add_carrier(USPS => { username => '...', password => '...', key => '...', ... });
+  $ship = $ship->add_carrier($carrier_object);
+
+Adds an instance of L<Mojo::Shipment::Carrier> to L</carriers>.
+If passed an object, the object is verified to be a subclass of that module and added.
+Otherwise, the first argument is assumed to be a class name, first attempted relative to C<Mojo::Shipment::Carrier> then as absolute.
+If the class can be loaded, its parentage is checked as before and then an instace is created, using an optional hash as constructor arguments.
+If provided, those arguments should conform to the documented constructor arguments for that class.
+
+If these conditions fail, and no carrier is added, the method throws an exception.
+
+=head2 delegate
+
+  $ship->delegate('method_name', $id, @addl_args);
+
+Attempts to call C<method_name> on an carrier instance in L</carriers> which corresponds to the given C<$id>.
+This is done via the L</detect> method.
+In the above example if the detected instance was C<$carrier> it would then be called as:
+
+  $carrier->method_name($id, @addl_args);
+
+Clearly this only is only useful for carrier methods that take an id as a leading argument.
+If no carrier is detected, an exception is thrown.
+
+This method is used to implement C<AUTOLOAD> for this class.
+This allows the very simple usage:
+
+  $ship->add_carrier($c1)->add_carrier($c2);
+  $info = $ship->track($id);
+
+=head2 detect
+
+  $carrier = $ship->detect($id);
+
+Returns the first carrier in L</carriers> that validates the given id as something that it can handle, via L<Mojo::Shipment/validate>.
+Returns undef if no carrier matches.
+
+=head1 SEE ALSO
+
+=over
+
+=item L<Shipment>
+
+=item L<Parcel::Track>
+
+=item L<Net::Async::Webservice::UPS>
+
+=item L<Business::Shipping>
+
+=back
+
+=head1 DEVELOPMENT SPONSORED BY
+
+Restore Health Corporation, L<http://restorhc.com>
+
+=head1 AUTHOR
+
+Joel Berger, E<lt>joel.a.berger@gmail.comE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2015 by Joel Berger
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
