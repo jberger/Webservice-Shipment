@@ -3,7 +3,8 @@ package Mojo::Shipment;
 use Mojo::Base -base;
 use Scalar::Util 'blessed';
 
-has 'carriers' => sub { [] };
+has carriers => sub { [] };
+has defaults => sub { {} };
 
 use Carp;
 
@@ -15,6 +16,8 @@ sub AUTOLOAD {
 
 sub add_carrier {
   my ($self, $carrier, $conf) = @_;
+  $conf ||= {};
+  $conf = { %{$self->defaults}, %$conf };
 
   if (blessed $carrier and $carrier->isa('Mojo::Shipment::Carrier')) {
     push @{$self->carriers}, $carrier;
@@ -24,7 +27,7 @@ sub add_carrier {
   for my $class ("Mojo::Shipment::Carrier::$carrier", $carrier) {
     next unless eval "require $class; 1";
     next unless $class->isa('Mojo::Shipment::Carrier');
-    next unless my $inst = $class->new($conf || {});
+    next unless my $inst = $class->new($conf);
     push @{$self->carriers}, $inst;
     return $self;
   }
@@ -65,17 +68,15 @@ Mojo::Shipment - Get common shipping information from supported carriers
 
   use Mojo::Shipment;
 
-  my $ship = Mojo::Shipment->new;
+  my $ship = Mojo::Shipment->new(defaults => {date_format => '%m/%d/%y'});
   $ship->add_carrier(UPS => {
     api_key  => 'MYAPIKEY_12345',
     username => 'some_user',
     password => 'passw0rd',
-    date_format => '%m/%d/%y',
   });
   $ship->add_carrier(USPS => {
     username => 'my_username',
     password => 'p@ssword',
-    date_format => '%m/%d/%y',
   });
 
   use Data::Dumper;
@@ -129,6 +130,12 @@ L<Mojo::Shipment> inherits all of the attributes from L<Mojo::Base> and implemen
 
 An array refence of added L<Mojo::Shipment::Carrier> objects.
 You probably want to use L</add_carrier> instead.
+
+=head2 defaults
+
+A hash reference of default values to be merged with per-carrier constructor arguments when using L</add_carrier>.
+This defaults can be overridden by passing in an explicity parameter of the same name to L</add_carrier>.
+This is especially useful for C<date_format> parameters and possibly for C<username> and/or C<password> if those are consistent between carriers.
 
 =head1 METHODS
 
