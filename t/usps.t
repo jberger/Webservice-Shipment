@@ -2,14 +2,14 @@ use Mojolicious::Lite;
 
 use Test::Mojo;
 use Test::More;
-use Mojo::Shipment::Carrier::USPS;
+use Webservice::Shipment::Carrier::USPS;
 
 my $xml;
 
 any '/*any' => { any => '' } => sub { shift->render(text => $xml || '', format => 'xml') };
 
 my $t = Test::Mojo->new;
-my $usps = Mojo::Shipment::Carrier::USPS->new(date_format => '%m/%d/%y', ua => $t->ua, api_url => $t->app->url_for('/'));
+my $usps = Webservice::Shipment::Carrier::USPS->new(date_format => '%m/%d/%y', ua => $t->ua, api_url => $t->app->url_for('/'));
 
 subtest 'delivered 1' => sub {
   $xml = <<'  XML';

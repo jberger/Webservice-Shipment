@@ -1,4 +1,4 @@
-package Mojo::Shipment::Carrier;
+package Webservice::Shipment::Carrier;
 
 use Mojo::Base -base;
 
@@ -79,18 +79,18 @@ sub validate {
 
 =head1 NAME
 
-Mojo::Shipment::Carrier - A base class for carrier objects used by Mojo::Shipment
+Webservice::Shipment::Carrier - A base class for carrier objects used by Webservice::Shipment
 
 =head1 SYNOPSIS
 
 =head1 DESCRIPTION
 
-L<Mojo::Shipment::Carrier> is an abstract base class used to defined carrier objects which interact with external APIs.
-For security, L<Mojo::Shipment/add_carrier> requires that added carriers be a subclass of this one.
+L<Webservice::Shipment::Carrier> is an abstract base class used to defined carrier objects which interact with external APIs.
+For security, L<Webservice::Shipment/add_carrier> requires that added carriers be a subclass of this one.
 
 =head1 ATTRIBUTES
 
-L<Mojo::Shipment::Carrier> inherits all of the attributes from L<Mojo::Base> and implements the following new ones.
+L<Webservice::Shipment::Carrier> inherits all of the attributes from L<Mojo::Base> and implements the following new ones.
 
 =head2 api_url
 

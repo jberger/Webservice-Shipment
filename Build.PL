@@ -6,7 +6,7 @@ use warnings;
 use Module::Build;
 
 my $build = Module::Build->new(
-  module_name        => 'Mojo::Shipment',
+  module_name        => 'Webservice::Shipment',
   dist_author        => 'Joel Berger <joel.a.berger@gmail.com>',
   license            => 'perl',
   configure_requires => { 'Module::Build' => 0.38 },
@@ -16,8 +16,8 @@ my $build = Module::Build->new(
   },
   meta_merge => {
     resources => {
-      repository => 'https://github.com/jberger/Mojo-Shipment',
-      bugtracker => 'https://github.com/jberger/Mojo-Shipment/issues',
+      repository => 'https://github.com/jberger/Webservice-Shipment',
+      bugtracker => 'https://github.com/jberger/Webservice-Shipment/issues',
     },
   },
 );

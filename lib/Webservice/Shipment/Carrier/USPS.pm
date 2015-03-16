@@ -1,6 +1,6 @@
-package Mojo::Shipment::Carrier::USPS;
+package Webservice::Shipment::Carrier::USPS;
 
-use Mojo::Base 'Mojo::Shipment::Carrier';
+use Mojo::Base 'Webservice::Shipment::Carrier';
 
 use constant DEBUG => $ENV{MOJO_SHIPMENT_DEBUG};
 
@@ -114,16 +114,16 @@ sub _handle_response {
 
 =head1 NAME
 
-Mojo::Shipment::Carrier::USPS - USPS handling for Mojo::Shipment
+Webservice::Shipment::Carrier::USPS - USPS handling for Webservice::Shipment
 
 =head1 DESCRIPTION
 
-Implements USPS handling for L<Mojo::Shipment>.
-It is a subclass of L<Mojo::Shipment::Carrier> which implements all the necessary methods.
+Implements USPS handling for L<Webservice::Shipment>.
+It is a subclass of L<Webservice::Shipment::Carrier> which implements all the necessary methods.
 
 =head1 ATTRIBUTES
 
-L<Mojo::Shipment::Carrier::USPS> implements all of the attributes from L<Mojo::Shipment::Carrier> and implements the following new ones
+L<Webservice::Shipment::Carrier::USPS> implements all of the attributes from L<Webservice::Shipment::Carrier> and implements the following new ones
 
 =head2 template
 

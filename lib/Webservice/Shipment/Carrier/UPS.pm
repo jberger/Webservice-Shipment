@@ -1,6 +1,6 @@
-package Mojo::Shipment::Carrier::UPS;
+package Webservice::Shipment::Carrier::UPS;
 
-use Mojo::Base 'Mojo::Shipment::Carrier';
+use Mojo::Base 'Webservice::Shipment::Carrier';
 
 use Mojo::Template;
 use Mojo::URL;
@@ -139,16 +139,16 @@ sub _handle_response {
 
 =head1 NAME
 
-Mojo::Shipment::Carrier::UPS - UPS handling for Mojo::Shipment
+Webservice::Shipment::Carrier::UPS - UPS handling for Webservice::Shipment
 
 =head1 DESCRIPTION
 
-Implements UPS handling for L<Mojo::Shipment>.
-It is a subclass of L<Mojo::Shipment::Carrier> which implements all the necessary methods.
+Implements UPS handling for L<Webservice::Shipment>.
+It is a subclass of L<Webservice::Shipment::Carrier> which implements all the necessary methods.
 
 =head1 ATTRIBUTES
 
-L<Mojo::Shipment::Carrier::UPS> implements all of the attributes from L<Mojo::Shipment::Carrier> and implements the following new ones
+L<Webservice::Shipment::Carrier::UPS> implements all of the attributes from L<Webservice::Shipment::Carrier> and implements the following new ones
 
 =head2 api_key
 

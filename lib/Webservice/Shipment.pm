@@ -1,6 +1,10 @@
-package Mojo::Shipment;
+package Webservice::Shipment;
 
 use Mojo::Base -base;
+
+our $VERSION = '0.01';
+$VERSION = eval $VERSION;
+
 use Scalar::Util 'blessed';
 
 has carriers => sub { [] };
@@ -19,14 +23,14 @@ sub add_carrier {
   $conf ||= {};
   $conf = { %{$self->defaults}, %$conf };
 
-  if (blessed $carrier and $carrier->isa('Mojo::Shipment::Carrier')) {
+  if (blessed $carrier and $carrier->isa('Webservice::Shipment::Carrier')) {
     push @{$self->carriers}, $carrier;
     return $self;
   }
 
-  for my $class ("Mojo::Shipment::Carrier::$carrier", $carrier) {
+  for my $class ("Webservice::Shipment::Carrier::$carrier", $carrier) {
     next unless eval "require $class; 1";
-    next unless $class->isa('Mojo::Shipment::Carrier');
+    next unless $class->isa('Webservice::Shipment::Carrier');
     next unless my $inst = $class->new($conf);
     push @{$self->carriers}, $inst;
     return $self;
@@ -59,16 +63,16 @@ sub detect {
 
 =head1 NAME
 
-Mojo::Shipment - Get common shipping information from supported carriers
+Webservice::Shipment - Get common shipping information from supported carriers
 
 =head1 SYNOPSIS
 
   use strict;
   use warnings;
 
-  use Mojo::Shipment;
+  use Webservice::Shipment;
 
-  my $ship = Mojo::Shipment->new(defaults => {date_format => '%m/%d/%y'});
+  my $ship = Webservice::Shipment->new(defaults => {date_format => '%m/%d/%y'});
   $ship->add_carrier(UPS => {
     api_key  => 'MYAPIKEY_12345',
     username => 'some_user',
@@ -115,13 +119,13 @@ Mojo::Shipment - Get common shipping information from supported carriers
 
 =head1 DESCRIPTION
 
-L<Mojo::Shipment> is a central module for obtaining shipping information from supported carriers.
+L<Webservice::Shipment> is a central module for obtaining shipping information from supported carriers.
 It is very lightweight, built on the L<Mojolicious> toolkit.
 The fact that it is built on L<Mojolicious> does not restrict its utility in non-Mojolicious apps.
 
-L<Mojo::Shipment::Carrier> subclasses request information from that carrier's api and extract information from it.
+L<Webservice::Shipment::Carrier> subclasses request information from that carrier's api and extract information from it.
 The information is then returned in a standardized format for ease of use.
-Futher, L<Mojo::Shipment> itself tries to deduce which carrier to use based on the id number.
+Futher, L<Webservice::Shipment> itself tries to deduce which carrier to use based on the id number.
 This makes it very easy to use, but also implies that it will only ever report common information.
 More detailed API interfaces already exist and are mentioned L<below|/"SEE ALSO">.
 
@@ -131,11 +135,11 @@ Please do not rely on this for mission critical code until this message is remov
 
 =head1 ATTTRIBUTES
 
-L<Mojo::Shipment> inherits all of the attributes from L<Mojo::Base> and implements the following new ones.
+L<Webservice::Shipment> inherits all of the attributes from L<Mojo::Base> and implements the following new ones.
 
 =head2 carriers
 
-An array refence of added L<Mojo::Shipment::Carrier> objects.
+An array refence of added L<Webservice::Shipment::Carrier> objects.
 You probably want to use L</add_carrier> instead.
 
 =head2 defaults
@@ -146,16 +150,16 @@ This is especially useful for C<date_format> parameters and possibly for C<usern
 
 =head1 METHODS
 
-L<Mojo::Shipment> inherits all of the methods from L<Mojo::Base> and implements the following new ones.
+L<Webservice::Shipment> inherits all of the methods from L<Mojo::Base> and implements the following new ones.
 
 =head2 add_carrier
 
   $ship = $ship->add_carrier(UPS => { username => '...', password => '...', api_key => '...', ... });
   $ship = $ship->add_carrier($carrier_object);
 
-Adds an instance of L<Mojo::Shipment::Carrier> to L</carriers>.
+Adds an instance of L<Webservice::Shipment::Carrier> to L</carriers>.
 If passed an object, the object is verified to be a subclass of that module and added.
-Otherwise, the first argument is assumed to be a class name, first attempted relative to C<Mojo::Shipment::Carrier> then as absolute.
+Otherwise, the first argument is assumed to be a class name, first attempted relative to C<Webservice::Shipment::Carrier> then as absolute.
 If the class can be loaded, its parentage is checked as before and then an instace is created, using an optional hash as constructor arguments.
 If provided, those arguments should conform to the documented constructor arguments for that class.
 
@@ -184,7 +188,7 @@ This allows the very simple usage:
 
   $carrier = $ship->detect($id);
 
-Returns the first carrier in L</carriers> that validates the given id as something that it can handle, via L<Mojo::Shipment/validate>.
+Returns the first carrier in L</carriers> that validates the given id as something that it can handle, via L<Webservice::Shipment::Carrier/validate>.
 Returns undef if no carrier matches.
 
 =head1 SEE ALSO

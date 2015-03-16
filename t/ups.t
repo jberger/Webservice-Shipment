@@ -3,14 +3,14 @@ use Mojolicious::Lite;
 use Test::More;
 use Test::Mojo;
 
-use Mojo::Shipment::Carrier::UPS;
+use Webservice::Shipment::Carrier::UPS;
 
 my $xml;
 
 any '/*any' => { any => '' } => sub { shift->render(text => $xml || '', format => 'xml') };
 
 my $t = Test::Mojo->new;
-my $ups = Mojo::Shipment::Carrier::UPS->new(date_format => '%m/%d/%y', ua => $t->ua, api_url => $t->app->url_for('/'));
+my $ups = Webservice::Shipment::Carrier::UPS->new(date_format => '%m/%d/%y', ua => $t->ua, api_url => $t->app->url_for('/'));
 
 subtest 'delivered 1' => sub {
   $xml = <<'  XML';
