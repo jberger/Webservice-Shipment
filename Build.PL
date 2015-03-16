@@ -11,7 +11,8 @@ my $build = Module::Build->new(
   license            => 'perl',
   configure_requires => { 'Module::Build' => 0.38 },
   requires => {
-    'Mojolicious'  => '5.0',
+    'Mojolicious' => '5.0',
+    'Time::Piece' => 0,
   },
   meta_merge => {
     resources => {
