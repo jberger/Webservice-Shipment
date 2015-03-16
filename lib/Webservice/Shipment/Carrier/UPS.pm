@@ -55,7 +55,9 @@ sub extract_destination {
 sub extract_service {
   my ($self, $id, $dom) = @_;
   my $service = $dom->at('Shipment Service Description') or return;
-  return $service->text;
+  my $text = $service->text;
+  $text = "UPS $text" unless $text =~ /UPS/;
+  return $text;
 }
 
 sub extract_status {

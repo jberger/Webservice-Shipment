@@ -59,7 +59,7 @@ subtest 'delivered 2' => sub {
       'state' => 'TX',
       'address1' => ''
     },
-    'service' => 'NEXT DAY AIR SAVER',
+    'service' => 'UPS NEXT DAY AIR SAVER',
     'weight' => '0.60 LBS',
     human_url => 'http://wwwapps.ups.com/WebTracking/track?trackNums=1Z584856NW66600000&track.x=Track',
   };
@@ -87,7 +87,7 @@ subtest 'delivered 3' => sub {
       'delivered' => 1,
       'description' => 'DELIVERED'
     },
-    'service' => 'NEXT DAY AIR',
+    'service' => 'UPS NEXT DAY AIR',
     human_url => 'http://wwwapps.ups.com/WebTracking/track?trackNums=1Z584856NT64470000&track.x=Track',
   };
   is_deeply $data, $expect, 'parsed data correctly';
@@ -116,7 +116,7 @@ subtest 'delivered 4 (non-blocking)' => sub {
       'country' => 'US',
       'address1' => '',
     },
-    'service' => 'NEXT DAY AIR SAVER',
+    'service' => 'UPS NEXT DAY AIR SAVER',
     human_url => 'http://wwwapps.ups.com/WebTracking/track?trackNums=1Z5848562966510000&track.x=Track',
   };
   is_deeply $data, $expect, 'parsed data correctly';
