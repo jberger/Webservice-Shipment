@@ -25,6 +25,13 @@ Mojo::Shipment - Get common shipping information from supported carriers
   print Dumper $ship->track('9400105901096094290500'); # usps
   print Dumper $ship->track('1Z584056NW00605000'); # ups
 
+  # non-blocking with callback
+  $ship->track('1Z584056NW00605000', sub {
+    my ($carrier, $err, $info) = @_;
+    warn $err if $err;
+    print Dumper $info
+  });
+
   __END__
   # sample output
 

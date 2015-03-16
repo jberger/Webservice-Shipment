@@ -4,7 +4,7 @@ use Mojo::Base 'Mojo::Shipment::Carrier';
 
 use Mojo::Template;
 use Mojo::URL;
-use Mojo::UserAgent;
+use Mojo::IOLoop;
 use Time::Piece;
 use Carp;
 
@@ -104,12 +104,29 @@ sub human_url {
 }
 
 sub request {
-  my ($self, $id) = @_;
+  my ($self, $id, $cb) = @_;
 
   my $xml = Mojo::Template->new->render($self->template, $self, $id);
   warn "Request:\n$xml" if DEBUG;
-  my $tx = $self->ua->post($self->api_url, $xml);
 
+  unless ($cb) {
+    my $tx = $self->ua->post($self->api_url, $xml);
+    return _handle_response($tx);
+  }
+
+  Mojo::IOLoop->delay(
+    sub { $self->ua->post($self->api_url, $xml, shift->begin) },
+    sub {
+      my ($ua, $tx) = @_;
+      die $tx->error->{message} unless $tx->success;
+      my $dom = _handle_response($tx);
+      $self->$cb(undef, $dom);
+    },
+  )->catch(sub{ $self->$cb($_[1], undef) })->wait;
+}
+
+sub _handle_response {
+  my $tx = shift;
   my $dom = $tx->res->dom;
   warn "Response:\n$dom\n" if DEBUG;
   $dom = $dom->at('TrackResponse');

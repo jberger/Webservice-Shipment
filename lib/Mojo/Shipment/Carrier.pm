@@ -4,6 +4,7 @@ use Mojo::Base -base;
 
 use Mojo::URL;
 use Mojo::UserAgent;
+use Mojo::IOLoop;
 
 use Carp;
 
@@ -48,10 +49,24 @@ sub parse {
 sub request { die 'to be overloaded by subclass' }
 
 sub track {
-  my ($self, $id) = @_;
-  croak "No tracking information was available for $id"
-    unless my $res = $self->request($id);
-  return $self->parse($id, $res);
+  my ($self, $id, $cb) = @_;
+  my $fail_msg = "No tracking information was available for $id";
+
+  unless ($cb) {
+    croak $fail_msg unless my $res = $self->request($id);
+    return $self->parse($id, $res);
+  }
+
+  Mojo::IOLoop->delay(
+    sub { $self->request($id, shift->begin) },
+    sub {
+      my ($delay, $err, $res) = @_;
+      die $err if $err;
+      die $fail_msg unless $res;
+      my $data = $self->parse($id, $res);
+      $self->$cb(undef, $data);
+    },
+  )->catch(sub{ $self->$cb($_[1], undef) })->wait;
 }
 
 sub validate {
@@ -200,6 +215,9 @@ It contains the following structure with results obtained from many of the other
 
   my $res = $carrier->request($id);
 
+  # or nonblocking with callback
+  $carrier->request($id, sub { my ($carrier, $err, $res) = @_; ... });
+
 Given a valid id, this methods should return some native result for which other methods may extract or generate information.
 The actual response will be carrier dependent and should not be relied upon other than the fact that it should be able to be passed to the extraction methods and function correctly.
 Must be overridden by subclass, the default implementation throws an exception.
@@ -207,6 +225,9 @@ Must be overridden by subclass, the default implementation throws an exception.
 =head2 track
 
   my $info = $carrier->track($id);
+
+  # or nonblocking with callback
+  $carrier->track($id, sub { my ($carrier, $err, $info) = @_; ... });
 
 A shortcut for calling L</request> and then L</parse> returning those results.
 Note that this method throws an exception if L</request> returns a falsey value.

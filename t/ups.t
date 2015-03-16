@@ -93,12 +93,14 @@ subtest 'delivered 3' => sub {
   is_deeply $data, $expect, 'parsed data correctly';
 };
 
-subtest 'delivered 4' => sub {
+subtest 'delivered 4 (non-blocking)' => sub {
   $xml = <<'  XML';
 <?xml version="1.0"?>
 <TrackResponse><Response><TransactionReference><CustomerContext>1Z5848562966510000</CustomerContext></TransactionReference><ResponseStatusCode>1</ResponseStatusCode><ResponseStatusDescription>Success</ResponseStatusDescription></Response><Shipment><Shipper><ShipperNumber>584856</ShipperNumber><Address><AddressLine1>1234 MAIN STREET</AddressLine1><City>MADISON</City><StateProvinceCode>WI</StateProvinceCode><PostalCode>53717   2007</PostalCode><CountryCode>US</CountryCode></Address></Shipper><ShipTo><Address><City>W HARRISON</City><StateProvinceCode>NY</StateProvinceCode><PostalCode>106042137</PostalCode><CountryCode>US</CountryCode></Address></ShipTo><ShipmentWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>0.50</Weight></ShipmentWeight><Service><Code>013</Code><Description>NEXT DAY AIR SAVER</Description></Service><ReferenceNumber><Code>01</Code><Value>87972050004</Value></ReferenceNumber><ShipmentIdentificationNumber>1Z5848562966510000</ShipmentIdentificationNumber><PickupDate>20150305</PickupDate><DeliveryDateUnavailable><Type>Scheduled Delivery</Type><Description>Scheduled Delivery Date is not currently available, please try back later</Description></DeliveryDateUnavailable><Package><TrackingNumber>1Z5848562966510000</TrackingNumber><PackageServiceOptions><SignatureRequired><Code>S</Code></SignatureRequired></PackageServiceOptions><Activity><ActivityLocation><Address><City>WEST HARRISON</City><StateProvinceCode>NY</StateProvinceCode><PostalCode>10604</PostalCode><CountryCode>US</CountryCode></Address><Code>M1</Code><Description>RESIDENTIAL</Description><SignedForByName>JOHN Q. PUBLIC</SignedForByName></ActivityLocation><Status><StatusType><Code>D</Code><Description>DELIVERED</Description></StatusType><StatusCode><Code>KB</Code></StatusCode></Status><Date>20150309</Date><Time>113400</Time></Activity><PackageWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>0.50</Weight></PackageWeight><ReferenceNumber><Code>01</Code><Value>87972050004</Value></ReferenceNumber><Accessorial><Code>043</Code><Description>CUSTOMIZED DELIVERY CONFIRM.</Description></Accessorial></Package></Shipment></TrackResponse>
   XML
-  my $data = $ups->track('1Z5848562966510000');
+  my ($err, $data);
+  $ups->track('1Z5848562966510000', sub { (undef, $err, $data) = @_ });
+  ok ! $err, 'no error';
   my $expect = {
     'weight' => '0.50 LBS',
     'status' => {

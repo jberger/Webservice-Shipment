@@ -6,6 +6,7 @@ use constant DEBUG => $ENV{MOJO_SHIPMENT_DEBUG};
 
 use Mojo::Template;
 use Mojo::URL;
+use Mojo::IOLoop;
 use Time::Piece;
 
 has api_url => sub { Mojo::URL->new('http://production.shippingapis.com/ShippingAPI.dll?API=TrackV2') };
@@ -80,11 +81,30 @@ sub extract_status{
 sub extract_weight { '' }
 
 sub request {
-  my ($self, $id) = @_;
+  my ($self, $id, $cb) = @_;
+
   my $xml = Mojo::Template->new->render($self->template, $self, $id);
   warn "Request:\n$xml" if DEBUG;
   my $url = $self->api_url->clone->query({XML => $xml});
-  my $tx  = $self->ua->get($url);
+
+  unless ($cb) {
+    my $tx  = $self->ua->get($url);
+    return _handle_response($tx);
+  }
+
+  Mojo::IOLoop->delay(
+    sub { $self->ua->get($url, shift->begin) },
+    sub {
+      my ($ua, $tx) = @_;
+      die $tx->error->{message} unless $tx->success;
+      my $dom = _handle_response($tx);
+      $self->$cb(undef, $dom);
+    },
+  )->catch(sub{ $self->$cb($_[1], undef) })->wait;
+}
+
+sub _handle_response {
+  my $tx = shift;
   my $dom = $tx->res->dom;
   warn "Response:\n$dom\n" if DEBUG;
   return $dom->at('TrackResponse TrackInfo');
