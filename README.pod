@@ -4,6 +4,51 @@ Mojo::Shipment - Get common shipping information from supported carriers
 
 =head1 SYNOPSIS
 
+  use strict;
+  use warnings;
+
+  use Mojo::Shipment;
+
+  my $ship = Mojo::Shipment->new;
+  $ship->add_carrier(UPS => {
+    api_key  => 'MYAPIKEY_12345',
+    username => 'some_user',
+    password => 'passw0rd',
+    date_format => '%m/%d/%y',
+  });
+  $ship->add_carrier(USPS => {
+    username => 'my_username',
+    password => 'p@ssword',
+    date_format => '%m/%d/%y',
+  });
+
+  use Data::Dumper;
+
+  print Dumper $ship->track('9400105901096094290500'); # usps
+  print Dumper $ship->track('1Z584056NW00605000'); # ups
+
+  __END__
+  # sample output
+
+  {
+    'status' => {
+      'description' => 'DELIVERED',
+      'date' => '12/24/14',
+      'delivered' => 1,
+    },
+    'destination' => {
+      'address1' => '',
+      'address2' => '',
+      'city' => 'BEVERLY HILLS',
+      'state' => 'CA',
+      'country' => '',
+      'postal_code' => '90210',
+    },
+    'weight' => '0.70 LBS',
+    'service' => 'UPS NEXT DAY AIR',
+    'human_url' => 'http://wwwapps.ups.com/WebTracking/track?trackNums=1Z584056NW00605000&track.x=Track',
+  }
+
 =head1 DESCRIPTION
 
 L<Mojo::Shipment> is a central module for obtaining shipping information from supported carriers.

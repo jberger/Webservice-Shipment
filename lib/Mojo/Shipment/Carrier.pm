@@ -49,7 +49,8 @@ sub request { die 'to be overloaded by subclass' }
 
 sub track {
   my ($self, $id) = @_;
-  my $res = $self->request($id) or return undef;
+  croak "No tracking information was available for $id"
+    unless my $res = $self->request($id);
   return $self->parse($id, $res);
 }
 
@@ -176,6 +177,25 @@ Note that though a response parameter is accepted, an implementation is likely a
 Returns a hash reference of data obtained from the id and the result obtained from L</request>.
 It contains the following structure with results obtained from many of the other methods.
 
+  {
+    'status' => {
+      'description' => 'DELIVERED',
+      'date' => Time::Piece->new(...), # this is a string if date_format is set
+      'delivered' => 1,
+    },
+    'destination' => {
+      'address1' => '',
+      'address2' => '',
+      'city' => 'BEVERLY HILLS',
+      'state' => 'CA',
+      'country' => '',
+      'postal_code' => '90210',
+    },
+    'weight' => '0.70 LBS',
+    'service' => 'UPS NEXT DAY AIR',
+    'human_url' => 'http://wwwapps.ups.com/WebTracking/track?trackNums=1Z584056NW00605000&track.x=Track',
+  }
+
 =head2 request
 
   my $res = $carrier->request($id);
@@ -188,7 +208,8 @@ Must be overridden by subclass, the default implementation throws an exception.
 
   my $info = $carrier->track($id);
 
-A shortcut for calling L</request> and then L</parse>.
+A shortcut for calling L</request> and then L</parse> returning those results.
+Note that this method throws an exception if L</request> returns a falsey value.
 
 =head2 validate
 
