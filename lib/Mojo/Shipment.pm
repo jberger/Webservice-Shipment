@@ -143,7 +143,7 @@ L<Mojo::Shipment> inherits all of the methods from L<Mojo::Base> and implements 
 
 =head2 add_carrier
 
-  $ship = $ship->add_carrier(USPS => { username => '...', password => '...', key => '...', ... });
+  $ship = $ship->add_carrier(UPS => { username => '...', password => '...', api_key => '...', ... });
   $ship = $ship->add_carrier($carrier_object);
 
 Adds an instance of L<Mojo::Shipment::Carrier> to L</carriers>.
