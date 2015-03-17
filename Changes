@@ -1,5 +1,8 @@
 Revision history for Perl module Webservice::Shipment
 
+0.02
+  - Added Webservice::Shipment::MockUserAgent for ease of testing
+
 0.01 2015-03-16
   - Initial release
 

@@ -1,19 +1,21 @@
-use Mojolicious::Lite;
-
+use Mojo::Base -strict;
 use Test::More;
-use Test::Mojo;
 
 use Webservice::Shipment::Carrier::UPS;
+use Webservice::Shipment::MockUserAgent;
 
-my $xml;
+my $mock = Webservice::Shipment::MockUserAgent->new;
 
-any '/*any' => { any => '' } => sub { shift->render(text => $xml || '', format => 'xml') };
-
-my $t = Test::Mojo->new;
-my $ups = Webservice::Shipment::Carrier::UPS->new(date_format => '%m/%d/%y', ua => $t->ua, api_url => $t->app->url_for('/'));
+my $ups = Webservice::Shipment::Carrier::UPS->new(
+  date_format => '%m/%d/%y',
+  ua => $mock,
+  username => 'johnq',
+  password => 'p@ssword',
+  api_key => 'COOLBEANS',
+);
 
 subtest 'delivered 1' => sub {
-  $xml = <<'  XML';
+  $mock->mock_response({text => <<'  XML', format => 'xml'});
 <?xml version="1.0"?>
 <TrackResponse><Response><TransactionReference><CustomerContext>1Z584856NT65700000</CustomerContext></TransactionReference><ResponseStatusCode>1</ResponseStatusCode><ResponseStatusDescription>Success</ResponseStatusDescription></Response><Shipment><Shipper><ShipperNumber>584856</ShipperNumber><Address><AddressLine1>1234 MAIN STREET</AddressLine1><City>MADISON</City><StateProvinceCode>WI</StateProvinceCode><PostalCode>53717   2007</PostalCode><CountryCode>US</CountryCode></Address></Shipper><ShipmentWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>0.00</Weight></ShipmentWeight><Service><Code>NT</Code><Description>UPS NEXT DAY AIR</Description></Service><ShipmentIdentificationNumber>1Z584856NT65700000</ShipmentIdentificationNumber><DeliveryDateUnavailable><Type>Scheduled Delivery</Type><Description>Scheduled Delivery Date is not currently available, please try back later</Description></DeliveryDateUnavailable><Package><TrackingNumber>1Z584856NT65700000</TrackingNumber><Activity><ActivityLocation><Address><City>YATAHEY</City><StateProvinceCode>NM</StateProvinceCode><PostalCode>87375</PostalCode><CountryCode>US</CountryCode></Address><Code>ML</Code><Description>FRONT DOOR</Description></ActivityLocation><Status><StatusType><Code>D</Code><Description>DELIVERED</Description></StatusType><StatusCode><Code>FS</Code></StatusCode></Status><Date>20140820</Date><Time>105900</Time></Activity><PackageWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>0.00</Weight></PackageWeight></Package></Shipment></TrackResponse>
   XML
@@ -40,7 +42,7 @@ subtest 'delivered 1' => sub {
 };
 
 subtest 'delivered 2' => sub {
-  $xml = <<'  XML';
+  $mock->mock_response({text => <<'  XML', format => 'xml'});
 <?xml version="1.0"?>
 <TrackResponse><Response><TransactionReference><CustomerContext>1Z584856NW66600000</CustomerContext></TransactionReference><ResponseStatusCode>1</ResponseStatusCode><ResponseStatusDescription>Success</ResponseStatusDescription></Response><Shipment><Shipper><ShipperNumber>584856</ShipperNumber><Address><AddressLine1>1234 MAIN STREET</AddressLine1><City>MADISON</City><StateProvinceCode>WI</StateProvinceCode><PostalCode>53717   2007</PostalCode><CountryCode>US</CountryCode></Address></Shipper><ShipTo><Address><City>CARROLLTON</City><StateProvinceCode>TX</StateProvinceCode><PostalCode>750062755</PostalCode><CountryCode>US</CountryCode></Address></ShipTo><ShipmentWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>0.60</Weight></ShipmentWeight><Service><Code>013</Code><Description>NEXT DAY AIR SAVER</Description></Service><ReferenceNumber><Code>01</Code><Value>88135290008</Value></ReferenceNumber><ShipmentIdentificationNumber>1Z584856NW66600000</ShipmentIdentificationNumber><PickupDate>20150305</PickupDate><DeliveryDateUnavailable><Type>Scheduled Delivery</Type><Description>Scheduled Delivery Date is not currently available, please try back later</Description></DeliveryDateUnavailable><Package><TrackingNumber>1Z584856NW66600000</TrackingNumber><Activity><ActivityLocation><Address><City>CARROLLTON</City><StateProvinceCode>TX</StateProvinceCode><PostalCode>75006</PostalCode><CountryCode>US</CountryCode></Address><Code>ML</Code><Description>FRONT DOOR</Description></ActivityLocation><Status><StatusType><Code>D</Code><Description>DELIVERED</Description></StatusType><StatusCode><Code>FS</Code></StatusCode></Status><Date>20150306</Date><Time>185200</Time></Activity><PackageWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>0.60</Weight></PackageWeight><ReferenceNumber><Code>01</Code><Value>88135290008</Value></ReferenceNumber></Package></Shipment></TrackResponse>
   XML
@@ -67,7 +69,7 @@ subtest 'delivered 2' => sub {
 };
 
 subtest 'delivered 3' => sub {
-  $xml = <<'  XML';
+  $mock->mock_response({text => <<'  XML', format => 'xml'});
 <?xml version="1.0"?>
 <TrackResponse><Response><TransactionReference><CustomerContext>1Z584856NT64470000</CustomerContext></TransactionReference><ResponseStatusCode>1</ResponseStatusCode><ResponseStatusDescription>Success</ResponseStatusDescription></Response><Shipment><Shipper><ShipperNumber>584856</ShipperNumber><Address><AddressLine1>1234 MAIN STREET</AddressLine1><City>MADISON</City><StateProvinceCode>WI</StateProvinceCode><PostalCode>53717   2007</PostalCode><CountryCode>US</CountryCode></Address></Shipper><ShipTo><Address><City>NEW YORK</City><StateProvinceCode>NY</StateProvinceCode><PostalCode>100655924</PostalCode><CountryCode>US</CountryCode></Address></ShipTo><ShipmentWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>1.10</Weight></ShipmentWeight><Service><Code>001</Code><Description>NEXT DAY AIR</Description></Service><ReferenceNumber><Code>01</Code><Value>88148560006</Value></ReferenceNumber><ShipmentIdentificationNumber>1Z584856NT64470000</ShipmentIdentificationNumber><PickupDate>20150305</PickupDate><DeliveryDateUnavailable><Type>Scheduled Delivery</Type><Description>Scheduled Delivery Date is not currently available, please try back later</Description></DeliveryDateUnavailable><Package><TrackingNumber>1Z584856NT64470000</TrackingNumber><Activity><ActivityLocation><Address><City>NEW YORK</City><StateProvinceCode>NY</StateProvinceCode><PostalCode>10065</PostalCode><CountryCode>US</CountryCode></Address><Code>ML</Code><Description>FRONT DOOR</Description></ActivityLocation><Status><StatusType><Code>D</Code><Description>DELIVERED</Description></StatusType><StatusCode><Code>FS</Code></StatusCode></Status><Date>20150309</Date><Time>090300</Time></Activity><PackageWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>1.10</Weight></PackageWeight><ReferenceNumber><Code>01</Code><Value>88148560006</Value></ReferenceNumber></Package></Shipment></TrackResponse>
   XML
@@ -94,7 +96,8 @@ subtest 'delivered 3' => sub {
 };
 
 subtest 'delivered 4 (non-blocking)' => sub {
-  $xml = <<'  XML';
+  $mock->mock_blocking(0);
+  $mock->mock_response({text => <<'  XML', format => 'xml'});
 <?xml version="1.0"?>
 <TrackResponse><Response><TransactionReference><CustomerContext>1Z5848562966510000</CustomerContext></TransactionReference><ResponseStatusCode>1</ResponseStatusCode><ResponseStatusDescription>Success</ResponseStatusDescription></Response><Shipment><Shipper><ShipperNumber>584856</ShipperNumber><Address><AddressLine1>1234 MAIN STREET</AddressLine1><City>MADISON</City><StateProvinceCode>WI</StateProvinceCode><PostalCode>53717   2007</PostalCode><CountryCode>US</CountryCode></Address></Shipper><ShipTo><Address><City>W HARRISON</City><StateProvinceCode>NY</StateProvinceCode><PostalCode>106042137</PostalCode><CountryCode>US</CountryCode></Address></ShipTo><ShipmentWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>0.50</Weight></ShipmentWeight><Service><Code>013</Code><Description>NEXT DAY AIR SAVER</Description></Service><ReferenceNumber><Code>01</Code><Value>87972050004</Value></ReferenceNumber><ShipmentIdentificationNumber>1Z5848562966510000</ShipmentIdentificationNumber><PickupDate>20150305</PickupDate><DeliveryDateUnavailable><Type>Scheduled Delivery</Type><Description>Scheduled Delivery Date is not currently available, please try back later</Description></DeliveryDateUnavailable><Package><TrackingNumber>1Z5848562966510000</TrackingNumber><PackageServiceOptions><SignatureRequired><Code>S</Code></SignatureRequired></PackageServiceOptions><Activity><ActivityLocation><Address><City>WEST HARRISON</City><StateProvinceCode>NY</StateProvinceCode><PostalCode>10604</PostalCode><CountryCode>US</CountryCode></Address><Code>M1</Code><Description>RESIDENTIAL</Description><SignedForByName>JOHN Q. PUBLIC</SignedForByName></ActivityLocation><Status><StatusType><Code>D</Code><Description>DELIVERED</Description></StatusType><StatusCode><Code>KB</Code></StatusCode></Status><Date>20150309</Date><Time>113400</Time></Activity><PackageWeight><UnitOfMeasurement><Code>LBS</Code></UnitOfMeasurement><Weight>0.50</Weight></PackageWeight><ReferenceNumber><Code>01</Code><Value>87972050004</Value></ReferenceNumber><Accessorial><Code>043</Code><Description>CUSTOMIZED DELIVERY CONFIRM.</Description></Accessorial></Package></Shipment></TrackResponse>
   XML
