@@ -109,7 +109,8 @@ The default implementation dies if used without being specified.
 =head2 ua
 
 An instance of L<Mojo::UserAgent>, presumably used to make the L</request>.
-This is provided as a convenience for subclass implementations.
+This is provided as a convenience for subclass implementations, and as an injection mechanism for a user agent which can mock the external service.
+See L<Webservice::Shipment::MockUserAgent> for more details.
 
 =head2 usename
 
