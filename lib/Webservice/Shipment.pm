@@ -2,7 +2,7 @@ package Webservice::Shipment;
 
 use Mojo::Base -base;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 $VERSION = eval $VERSION;
 
 use Scalar::Util 'blessed';
@@ -207,7 +207,7 @@ Returns undef if no carrier matches.
 
 =head1 DEVELOPMENT SPONSORED BY
 
-Restore Health Corporation, L<http://restorhc.com>
+Restore Health Corporation, L<http://restorehc.com>
 
 =head1 AUTHOR
 
