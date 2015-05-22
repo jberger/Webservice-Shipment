@@ -7,6 +7,7 @@ use Mojo::UserAgent;
 use Mojo::IOLoop;
 
 use Carp;
+our @CARP_NOT = ('Webservice::Shipment'); # don't carp from AUTOLOAD
 
 has api_url => sub { Mojo::URL->new };
 has password => sub { croak 'password is required' };
