@@ -7,13 +7,13 @@ use Mojo::UserAgent;
 use Mojo::IOLoop;
 
 use Carp;
-our @CARP_NOT = ('Webservice::Shipment'); # don't carp from AUTOLOAD
 
 has api_url => sub { Mojo::URL->new };
 has password => sub { croak 'password is required' };
 has ua => sub { Mojo::UserAgent->new };
 has username => sub { croak 'username is required' };
 has [qw/date_format validation_regex/];
+has carrier_description => sub { croak 'carrier_description is required' };
 
 sub extract_destination { '' }
 sub extract_service     { '' }
@@ -36,7 +36,7 @@ sub parse {
   @{$ret->{status}}{qw/description date delivered/} = $self->extract_status($id, $res);
   $ret->{status}{date} ||= '';
   if ($ret->{status}{date} and my $fmt = $self->date_format) {
-    $ret->{status}{date} = $ret->{status}{date}->strftime($fmt);
+    eval{$ret->{status}{date} = $ret->{status}{date}->strftime($fmt); };
   }
   $ret->{status}{delivered} = $ret->{status}{delivered} ? 1 : 0;
 
@@ -240,4 +240,3 @@ Note that this method throws an exception if L</request> returns a falsey value.
 
 Given an id, check that the class can handle it.
 The default implementation tests against the L</validation_regex>.
-

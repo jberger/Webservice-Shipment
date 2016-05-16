@@ -9,6 +9,7 @@ use Time::Piece;
 use Carp;
 
 use constant DEBUG => $ENV{MOJO_SHIPMENT_DEBUG};
+has carrier_description => sub { 'UPS' };
 
 has api_key => sub { croak 'api_key is required' };
 has api_url => sub { Mojo::URL->new('https://wwwcie.ups.com/ups.app/xml/Track') };
