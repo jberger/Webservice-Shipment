@@ -67,7 +67,7 @@ sub track {
       my $data = $self->parse($id, $res);
       $self->$cb(undef, $data);
     },
-  )->catch(sub{ $self->$cb($_[1], undef) })->wait;
+  )->tap(on => error => sub{ $self->$cb($_[1], undef) })->wait;
 }
 
 sub validate {
