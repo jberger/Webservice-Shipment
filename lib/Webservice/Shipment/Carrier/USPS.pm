@@ -22,6 +22,7 @@ has template => <<'XML';
 </TrackFieldRequest>
 XML
 
+has carrier_description => sub { 'USPS' };
 has validation_regex => sub { qr/\b(9\d\d\d ?\d\d\d\d ?\d\d\d\d ?\d\d\d\d ?\d\d\d\d ?\d\d|91\d\d ?\d\d\d\d ?\d\d\d\d ?\d\d\d\d ?\d\d\d\d)\b/i };
 
 sub human_url {
