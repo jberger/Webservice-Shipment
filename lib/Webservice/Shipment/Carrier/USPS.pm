@@ -10,7 +10,7 @@ use Mojo::IOLoop;
 use Time::Piece;
 
 has api_url => sub { Mojo::URL->new('http://production.shippingapis.com/ShippingAPI.dll?API=TrackV2') };
-
+has carrier_description => sub { 'USPS' };
 has template => <<'XML';
   % my ($self, $id) = @_;
 <?xml version="1.0" encoding="UTF-8" ?>
