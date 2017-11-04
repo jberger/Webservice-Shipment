@@ -128,6 +128,12 @@ This allows the very simple usage:
 Returns the first carrier in L</carriers> that validates the given id as something that it can handle, via L<Webservice::Shipment::Carrier/validate>.
 Returns undef if no carrier matches.
 
+=head2 carrier_description
+
+  $carrier = $ship->carrier_description();
+
+Returns the common name of carrier (FedEx, UPS, USPS, etc).  
+
 =head1 SEE ALSO
 
 =over
