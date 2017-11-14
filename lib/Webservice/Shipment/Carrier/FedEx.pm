@@ -35,93 +35,108 @@ has template => <<'TEMPLATE';
 TEMPLATE
 
 sub human_url {
-    my ($self, $id, $dom) = @_;
-    return Mojo::URL->new('https://www.fedex.com/apps/fedextrack/')->query(action => 'track', locale => 'en_US', cntry_code => 'us', language => 'english', tracknumbers => $id);
+  my ($self, $id, $dom) = @_;
+  return Mojo::URL->new('https://www.fedex.com/apps/fedextrack/')->query(action => 'track', locale => 'en_US', cntry_code => 'us', language => 'english', tracknumbers => $id);
 }
 
 sub extract_destination {
-    my ($self, $id, $dom, $target) = @_;
+  my ($self, $id, $dom, $target) = @_;
 
-    my %targets = (
-	postal_code => 'destZip',
-	state => 'destStateCD',
-	city => 'destCity',
-	country => 'destCntryCD',
-	);
+  my %targets = (
+    postal_code => 'destZip',
+    state => 'destStateCD',
+    city => 'destCity',
+    country => 'destCntryCD',
+  );
 
-    my $t = $targets{$target} or return;
-    my $addr = $dom->{$t} or return;
-    return $addr;
+  my $t = $targets{$target} or return;
+  my $addr = $dom->{$t} or return;
+  return $addr;
 }
 
 sub extract_service {
-    my ($self, $id, $dom) = @_;
-    my $class = $dom->{'serviceDesc'};
-    my $service =  $class =~m/fedex/i ? $class : 'FedEx ' . $class;
-    return $service;
+  my ($self, $id, $dom) = @_;
+  my $class = $dom->{'serviceDesc'};
+  my $service =  $class =~m/fedex/i ? $class : 'FedEx ' . $class;
+  return $service;
 }
 
 sub extract_status {
-    my ($self, $id, $dom) = @_;
+  my ($self, $id, $dom) = @_;
 
-    my $summary = $dom->{'scanEventList'}->[0];
-    return unless $summary;
-#    my $event = $summary->{status} || $dom->{statusWithDetails};
-    my $delivered = $dom->{isDelivered} ? 1 : 0;
+  my $summary = $dom->{'scanEventList'}->[0];
+  return unless $summary;
 
-    my $desc = $dom->{statusWithDetails};
-    unless ($summary->{date}) {$desc = 'No information found for <a href="' . human_url($id) . '">' . $id . '</a>';
-	    return ($desc, undef, $delivered);
-    }
-    my $timestamp=join(' ', $summary->{date}, $summary->{time});
-     eval{$timestamp= 
-    Time::Piece->strptime(    ($summary->{date} ) . ' T ' . ($summary->{time} ),      '%Y-%m-%d T %H:%M:%S'    );};
+  my $delivered = $dom->{isDelivered} ? 1 : 0;
 
-    $desc = $summary->{date} ? join(' ', $desc , $summary->{date}, $summary->{time}) : $desc;
-    unless ($desc) 
-    { $desc=Cpanel::JSON::XS->new->pretty(1)->encode($dom->{'scanEventList'});}
-    return ($desc, $timestamp, $delivered);
+  my $desc = $dom->{statusWithDetails};
+  unless ($summary->{date}) {
+    $desc = 'No information found for <a href="' . human_url($id) . '">' . $id . '</a>';
+    return ($desc, undef, $delivered);
+  }
+  my $timestamp = join(' ', $summary->{date}, $summary->{time});
+  eval{
+    $timestamp = Time::Piece->strptime($summary->{date} . ' T ' . $summary->{time}, '%Y-%m-%d T %H:%M:%S');
+  };
+
+  $desc = $summary->{date} ? join(' ', $desc , $summary->{date}, $summary->{time}) : $desc;
+  $desc ||= Cpanel::JSON::XS->new->pretty(1)->encode($dom->{'scanEventList'});
+  return ($desc, $timestamp, $delivered);
 }
 
 sub extract_weight { '' }
 
 sub request {
-    my ($self, $id, $cb) = @_;
+  my ($self, $id, $cb) = @_;
 
-    my $url = $self->api_url;
+  my $tx = $self->ua->build_tx(
+    POST => $self->api_url.
+    {Accept => '*/*'},
+    form => {
+      action => 'trackpackages',
+      locale => 'en_US',
+      version => '1',
+      format => 'json',
+      data => Cpanel::JSON::XS->new->encode({
+        TrackPackagesRequest => {
+          appType => 'WTRK',
+          uniqueKey => '',
+          processingParameters => {},
+          trackingInfoList => [
+            {
+              trackNumberInfo => {
+                trackingNumber => $id,
+                trackingQualifier => '',
+                trackingCarrier => '',
+              }
+            }
+          ]
+        }
+      })
+    }
+  );
 
-    unless ($cb) { 
-	my $tx  =
-	    $self->ua->post($url => {Accept => '*/*'} => form => {
-		action => 'trackpackages',
-		locale => 'en_US',
-		version => '1',
-		format => 'json',
-		data => Cpanel::JSON::XS->new->encode( { "TrackPackagesRequest" => {"appType" => "WTRK",
-		"uniqueKey" => "","processingParameters" => {},
-		"trackingInfoList" => [{
-		"trackNumberInfo" =>
-		{"trackingNumber" => $id,"trackingQualifier" => "","trackingCarrier" => ""}}]}})
-		      });
-	return _handle_response($tx);
-	}
+  unless ($cb) {
+    $self->ua->start($tx);
+    return _handle_response($tx);
+  }
 
-Mojo::IOLoop->delay(
-    sub { $self->ua->get($url, shift->begin) },
+  Mojo::IOLoop->delay(
+    sub { $self->ua->start($tx, shift->begin) },
     sub {
-	my ($ua, $tx) = @_;
-	die $tx->error->{message} unless $tx->success;
-	my $json = _handle_response($tx);
-	$self->$cb(undef, $json);
+      my ($ua, $tx) = @_;
+      die $tx->error->{message} unless $tx->success;
+      my $json = _handle_response($tx);
+      $self->$cb(undef, $json);
     },
-    )->tap(on => error => sub { $self->$cb($_[1], undef) })->wait;
+  )->catch(sub { $self->$cb(pop, undef) })->wait;
 }
 
 sub _handle_response {
-    my $tx = shift;
-    my $json = $tx->res->json;
-    warn "Response:\n" . $tx->res->body . "\n" if DEBUG;
-    return $json->{TrackPackagesResponse}{packageList}[0];
+  my $tx = shift;
+  my $json = $tx->res->json;
+  warn "Response:\n" . $tx->res->body . "\n" if DEBUG;
+  return $json->{TrackPackagesResponse}{packageList}[0];
 }
 
 1;
