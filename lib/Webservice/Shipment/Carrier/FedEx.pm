@@ -15,7 +15,13 @@ has validation_regex => sub {    qr/(\b96\d{20}\b)|(\b\d{15}\b)|(\b\d{12}\b)/ };
 
 sub human_url {
   my ($self, $id, $doc) = @_;
-  return Mojo::URL->new('https://www.fedex.com/apps/fedextrack/')->query(action => 'track', locale => 'en_US', cntry_code => 'us', language => 'english', tracknumbers => $id);
+  return Mojo::URL->new('https://www.fedex.com/apps/fedextrack/')->query(
+    action => 'track',
+    locale => 'en_US',
+    cntry_code => 'us',
+    language => 'english',
+    tracknumbers => $id,
+  );
 }
 
 sub extract_destination {
@@ -35,7 +41,7 @@ sub extract_destination {
 
 sub extract_service {
   my ($self, $id, $doc) = @_;
-  my $class = $doc->{'serviceDesc'};
+  my $class = $doc->{serviceDesc};
   my $service = $class =~ /fedex/i ? $class : 'FedEx ' . $class;
   return $service;
 }
@@ -43,7 +49,7 @@ sub extract_service {
 sub extract_status {
   my ($self, $id, $doc) = @_;
 
-  my $summary = $doc->{'scanEventList'}->[0];
+  my $summary = $doc->{scanEventList}[0];
   return unless $summary;
 
   my $delivered = $doc->{isDelivered} ? 1 : 0;
