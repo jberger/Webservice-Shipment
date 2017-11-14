@@ -37,7 +37,7 @@ sub parse {
   @{$ret->{status}}{qw/description date delivered/} = $self->extract_status($id, $res);
   $ret->{status}{date} ||= '';
   if ($ret->{status}{date} and my $fmt = $self->date_format) {
-	eval{$ret->{status}{date} = $ret->{status}{date}->strftime($fmt); };
+    eval{ $ret->{status}{date} = $ret->{status}{date}->strftime($fmt) };
   }
   $ret->{status}{delivered} = $ret->{status}{delivered} ? 1 : 0;
 
@@ -68,7 +68,7 @@ sub track {
       my $data = $self->parse($id, $res);
       $self->$cb(undef, $data);
     },
-  )->tap(on => error => sub{ $self->$cb($_[1], undef) })->wait;
+  )->catch(sub{ $self->$cb(pop, undef) })->wait;
 }
 
 sub validate {
