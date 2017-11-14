@@ -128,12 +128,6 @@ This allows the very simple usage:
 Returns the first carrier in L</carriers> that validates the given id as something that it can handle, via L<Webservice::Shipment::Carrier/validate>.
 Returns undef if no carrier matches.
 
-=head2 carrier_description
-
-  $carrier = $ship->carrier_description();
-
-Returns the common name of carrier (FedEx, UPS, USPS, etc).  
-
 =head1 SEE ALSO
 
 =over
@@ -148,17 +142,21 @@ Returns the common name of carrier (FedEx, UPS, USPS, etc).
 
 =back
 
-=head1 DEVELOPMENT SPONSORED BY
+=head1 SPECIAL THANKS
 
-Restore Health Corporation, L<http://restorehc.com>
+Pharmetika Software, L<http://pharmetika.com>
 
 =head1 AUTHOR
 
 Joel Berger, E<lt>joel.a.berger@gmail.comE<gt>
 
+=head1 CONTRIBUTORS
+
+Ryan Perry
+
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2015 by Joel Berger
+Copyright (C) 2015 by L</AUTHOR> and L</CONTRIBUTORS>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
