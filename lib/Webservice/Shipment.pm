@@ -2,7 +2,7 @@ package Webservice::Shipment;
 
 use Mojo::Base -base;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 $VERSION = eval $VERSION;
 
 use Scalar::Util 'blessed';
